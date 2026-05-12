@@ -36,7 +36,6 @@ const blogPostSchema = new Schema<IBlogPost>(
   { timestamps: true }
 );
 
-blogPostSchema.index({ slug: 1 });
 blogPostSchema.index({ status: 1, publishedAt: -1 });
 blogPostSchema.index({ title: "text", content: "text", tags: "text" });
 
