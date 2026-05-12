@@ -108,6 +108,28 @@ export class GigService {
       
     return gigs as unknown as IGig[];
   }
+
+  async getMyGigs(freelancerId: string, query: Partial<GigQueryInput>) {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+ 
+    const filter: mongoose.FilterQuery<IGig> = {
+      freelancer: new mongoose.Types.ObjectId(freelancerId),
+    };
+ 
+    if (query.search) filter.$text = { $search: query.search };
+ 
+    const [gigs, total] = await Promise.all([
+      Gig.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Gig.countDocuments(filter),
+    ]);
+
+    return {
+      gigs: gigs as unknown as IGig[],
+      meta: buildPaginationMeta(page, limit, total),
+    };
+  }
 }
 
 export const gigService = new GigService();
