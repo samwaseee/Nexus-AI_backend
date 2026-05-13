@@ -23,7 +23,7 @@ export class GigService {
     const filter: mongoose.FilterQuery<IGig> = { status: "active" };
 
     if (search) {
-      filter.$text = { $search: search };
+      filter.title = { $regex: search, $options: "i" };
     }
     if (category) filter.category = category;
     if (minPrice !== undefined || maxPrice !== undefined) {
