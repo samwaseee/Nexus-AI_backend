@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const ai_controller_1 = require("../controllers/ai.controller");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const validate_middleware_1 = require("../middleware/validate.middleware");
+const rateLimit_middleware_1 = require("../middleware/rateLimit.middleware");
+const ai_validation_1 = require("../validations/ai.validation");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.verifyToken);
+router.use(rateLimit_middleware_1.aiRateLimiter);
+router.post("/pitch", (0, validate_middleware_1.validate)(ai_validation_1.pitchBuilderSchema), ai_controller_1.buildPitch);
+router.post("/analyze", (0, validate_middleware_1.validate)(ai_validation_1.careerAnalyzerSchema), ai_controller_1.analyzeCareerHandler);
+router.post("/recommendations", (0, validate_middleware_1.validate)(ai_validation_1.recommendationSchema), ai_controller_1.getRecommendationsHandler);
+router.post("/chat", (0, validate_middleware_1.validate)(ai_validation_1.chatMessageSchema), ai_controller_1.chatHandler);
+router.get("/conversations", ai_controller_1.getConversations);
+router.get("/conversations/:id", ai_controller_1.getConversation);
+router.delete("/conversations/:id", ai_controller_1.deleteConversation);
+router.get("/usage", ai_controller_1.getUsageStats);
+exports.default = router;
+//# sourceMappingURL=ai.routes.js.map
