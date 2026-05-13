@@ -14,7 +14,7 @@ import AISession from "../models/AIsession.model";
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
-const getModel = (modelName = "gemini-1.5-flash"): GenerativeModel => {
+const getModel = (modelName = "gemini-2.5-flash"): GenerativeModel => {
   return genAI.getGenerativeModel({ model: modelName });
 };
 
