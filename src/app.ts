@@ -12,6 +12,7 @@ import { errorHandler } from "./middleware/error.middleware";
 
 import "./config/passport";
 import { ApiError } from "./utils/ApiError";
+import routes from "./routes";
 
 const app: Application = express();
 
@@ -60,7 +61,7 @@ app.get("/health", (_req: Request, res: Response) => {
 });
 
 // ─── API Routes ────────────────────────────────────────────────────────────
-// app.use("/api/v1", routes);
+app.use("/api/v1", routes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.use((_req: Request, _res: Response, next: NextFunction) => {

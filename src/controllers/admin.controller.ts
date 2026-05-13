@@ -6,7 +6,7 @@ import Gig from "../models/Gig.model";
 import Review from "../models/Review.model";
 import { ApiError } from "../utils/ApiError";
 import { buildPaginationMeta } from "../utils/ApiResponse";
-import AISession from "@/models/Aisession.model";
+import AISession from "../models/AIsession.model";
 
 // GET /api/v1/admin/stats — platform overview
 export const getPlatformStats = asyncHandler(async (_req: Request, res: Response) => {

@@ -10,7 +10,7 @@ import {
   RecommendationInput,
 } from "../utils/promptTemplates";
 import { ApiError } from "../utils/ApiError";
-import AISession from "@/models/Aisession.model";
+import AISession from "../models/AIsession.model";
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
