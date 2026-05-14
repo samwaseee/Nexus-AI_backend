@@ -3,6 +3,9 @@ import { asyncHandler } from "../utils/asyncHandler";
 import { sendSuccess } from "../utils/ApiResponse";
 import { userService } from "../services/user.service";
 import Order from "../models/Order.model";
+import User from "@/models/User.model";
+import { ApiError } from "@/utils/ApiError";
+import mongoose from "mongoose";
 
 // GET /api/v1/users/profile
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -45,4 +48,39 @@ export const getMyOrders = asyncHandler(async (req: Request, res: Response) => {
     .sort({ createdAt: -1 });
 
   sendSuccess(res, orders, "Orders fetched successfully");
+});
+
+// GET /api/v1/users/saved-gigs
+export const getSavedGigs = asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findById(req.user!.userId).populate("savedGigs");
+  
+  if (!user) {
+    throw ApiError.notFound("User not found");
+  }
+
+  sendSuccess(res, user.savedGigs || [], "Saved gigs fetched successfully");
+});
+
+// POST /api/v1/users/saved-gigs/:gigId
+export const toggleSavedGig = asyncHandler(async (req: Request, res: Response) => {
+  const { gigId } = req.params;
+  const userId = req.user!.userId;
+
+  const user = await User.findById(userId);
+  if (!user) throw ApiError.notFound("User not found");
+
+  // Check if the gig is already saved
+  const isSaved = user.savedGigs.some((id) => id.toString() === gigId);
+
+  if (isSaved) {
+    // Remove it
+    user.savedGigs = user.savedGigs.filter((id) => id.toString() !== gigId);
+  } else {
+    // Add it
+    user.savedGigs.push(new mongoose.Types.ObjectId(gigId));
+  }
+
+  await user.save();
+  
+  sendSuccess(res, { isSaved: !isSaved }, isSaved ? "Gig removed from saved" : "Gig saved successfully");
 });

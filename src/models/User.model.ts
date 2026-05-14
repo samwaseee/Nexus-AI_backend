@@ -25,6 +25,7 @@ export interface IUser extends Document {
   isVerified: boolean;
   isActive: boolean;
   lastSeen: Date;
+  savedGigs: mongoose.Types.ObjectId[]; // <-- NEW: TypeScript Interface
   refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -88,6 +89,16 @@ const userSchema = new Schema<IUser>(
     isVerified: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
     lastSeen: { type: Date, default: Date.now },
+    
+    // ─── NEW: Saved Gigs Array ────────────────────────────────────────────
+    savedGigs: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Gig",
+      },
+    ],
+    // ──────────────────────────────────────────────────────────────────────
+
     refreshToken: { type: String, select: false },
   },
   {
