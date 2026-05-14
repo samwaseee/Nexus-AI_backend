@@ -7,6 +7,7 @@ import reviewRoutes from "./review.routes";
 import aiRoutes from "./ai.routes";
 import adminRoutes from "./admin.routes";
 import blogRoutes from "./blog.routes";
+import orderRoutes from "./order.route";
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/reviews", reviewRoutes);
 router.use("/ai", aiRoutes);
 router.use("/admin", adminRoutes);
 router.use("/blog", blogRoutes);
+router.use("/orders", orderRoutes);
 
 export default router;
