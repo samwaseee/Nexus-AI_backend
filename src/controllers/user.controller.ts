@@ -4,7 +4,7 @@ import { sendSuccess } from "../utils/ApiResponse";
 import { userService } from "../services/user.service";
 import Order from "../models/Order.model";
 import User from "@/models/User.model";
-import { ApiError } from "@/utils/ApiError";
+import { ApiError } from "../utils/ApiError";
 import mongoose from "mongoose";
 
 // GET /api/v1/users/profile
