@@ -7,6 +7,7 @@ import Review from "../models/Review.model";
 import { ApiError } from "../utils/ApiError";
 import { buildPaginationMeta } from "../utils/ApiResponse";
 import AISession from "../models/AIsession.model";
+import Dispute from "../models/Dispute.model";
 
 // GET /api/v1/admin/stats — platform overview
 export const getPlatformStats = asyncHandler(async (_req: Request, res: Response) => {
@@ -186,4 +187,57 @@ export const updateGigStatus = asyncHandler(async (req: Request, res: Response) 
   );
   if (!gig) throw ApiError.notFound("Gig not found");
   sendSuccess(res, gig, "Gig status updated");
+});
+
+// GET /api/v1/admin/disputes
+export const getAllDisputes = asyncHandler(async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 20;
+  const skip = (page - 1) * limit;
+  const search = req.query.search as string;
+
+  const filter: Record<string, unknown> = {};
+  if (search) {
+    // Search by Order ID
+    filter.orderId = { $regex: search, $options: "i" };
+  }
+
+  const [disputes, total] = await Promise.all([
+    Dispute.find(filter)
+      .sort({ createdAt: -1 }) // Newest disputes first
+      .skip(skip)
+      .limit(limit)
+      .populate("client", "name email") // Crucial for the frontend UI
+      .populate("freelancer", "name email"), // Crucial for the frontend UI
+    Dispute.countDocuments(filter),
+  ]);
+
+  sendSuccess(res, disputes, "Disputes fetched successfully", 200, buildPaginationMeta(page, limit, total));
+});
+
+// PATCH /api/v1/admin/disputes/:id/resolve
+export const resolveDispute = asyncHandler(async (req: Request, res: Response) => {
+  const { resolution } = req.body;
+
+  // Security check: Ensure they are only sending valid resolutions
+  if (!["resolved_client", "resolved_freelancer"].includes(resolution)) {
+    throw ApiError.badRequest("Invalid resolution status");
+  }
+
+  const dispute = await Dispute.findByIdAndUpdate(
+    req.params.id,
+    { status: resolution },
+    { new: true }
+  ).populate("client", "name email").populate("freelancer", "name email");
+
+  if (!dispute) throw ApiError.notFound("Dispute not found");
+
+  // NOTE FOR LATER: Right here is where you would integrate Stripe/PayPal 
+  // to actually trigger the refund to the client or the payout to the freelancer!
+
+  sendSuccess(
+    res, 
+    dispute, 
+    `Dispute resolved in favor of the ${resolution === "resolved_client" ? "Client" : "Freelancer"}`
+  );
 });

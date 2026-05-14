@@ -7,6 +7,8 @@ import {
   deleteUser,
   getAllGigs,
   updateGigStatus,
+  getAllDisputes,
+  resolveDispute,
 } from "../controllers/admin.controller";
 import { verifyToken } from "../middleware/auth.middleware";
 import { requireAdmin } from "../middleware/role.middleware";
@@ -28,5 +30,9 @@ router.delete("/users/:id", deleteUser);
 // Gig management
 router.get("/gigs", getAllGigs);
 router.patch("/gigs/:id/status", updateGigStatus);
+
+// ─── Disputes ────────────────────────────────────────────────────────
+router.get("/disputes", getAllDisputes);
+router.patch("/disputes/:id/resolve", resolveDispute);
 
 export default router;

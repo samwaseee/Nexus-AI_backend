@@ -1,3 +1,6 @@
+const dns = require("dns");
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
+
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
@@ -5,6 +8,7 @@ import User from "../models/User.model";
 import Gig from "../models/Gig.model";
 import Review from "../models/Review.model";
 import BlogPost from "../models/BlogPost.model";
+import Dispute from "../models/Dispute.model";
 dotenv.config();
 
 
@@ -25,6 +29,7 @@ async function seed() {
       Gig.deleteMany({}),
       Review.deleteMany({}),
       BlogPost.deleteMany({}),
+      Dispute.deleteMany({}),
     ]);
     console.log("🗑️  Cleared existing data");
 
@@ -430,6 +435,66 @@ async function seed() {
       },
     ]);
     console.log("✅ Created blog posts");
+
+    const disputes = await Dispute.insertMany([
+      {
+        orderId: "ORD-982374A",
+        client: client._id,
+        freelancer: freelancers[3]._id, // Jake
+        reason: "Freelancer missed the cloud migration deadline by 4 days without communication. I want a refund.",
+        amount: 399,
+        status: "open",
+      },
+      {
+        orderId: "ORD-125689B",
+        client: client._id,
+        freelancer: freelancers[1]._id, // Marcus
+        reason: "Client is demanding 15 additional screens that were not in the original scope of the Figma project. Refuses to release escrow.",
+        amount: 599,
+        status: "open",
+      },
+      {
+        orderId: "ORD-882233C",
+        client: client._id,
+        freelancer: freelancers[2]._id, // Priya
+        reason: "The machine learning model's accuracy is only 60%, but the contract stipulated a minimum of 85% accuracy.",
+        amount: 2499,
+        status: "open",
+      },
+      {
+        orderId: "ORD-554411D",
+        client: client._id,
+        freelancer: freelancers[0]._id, // Sarah
+        reason: "The deployed Next.js app is completely broken on mobile devices. Freelancer refuses to fix the CSS bugs.",
+        amount: 799,
+        status: "open",
+      },
+      {
+        orderId: "ORD-999888E",
+        client: client._id,
+        freelancer: freelancers[3]._id, // Jake
+        reason: "The AWS configuration was done incorrectly, resulting in a $400 unexpected server bill for my company.",
+        amount: 1299,
+        status: "open",
+      },
+      {
+        orderId: "ORD-773344F",
+        client: client._id,
+        freelancer: freelancers[0]._id, // Sarah
+        reason: "Code was delivered perfectly and deployed to production, but client went completely unresponsive during the final payment milestone approval.",
+        amount: 1499,
+        status: "resolved_freelancer", // Historical data, won't show in active queue
+      },
+      {
+        orderId: "ORD-112233G",
+        client: client._id,
+        freelancer: freelancers[1]._id, // Marcus
+        reason: "The designer submitted a logo that was 100% plagiarized from a stock website.",
+        amount: 199,
+        status: "resolved_client", // Historical data, won't show in active queue
+      }
+    ]);
+    console.log(`✅ Created ${disputes.length} disputes (5 Open, 2 Resolved)`);
 
     console.log("\n🎉 Seed complete! Your database is fully populated.");
     console.log("──────────────────────────────────────────");
