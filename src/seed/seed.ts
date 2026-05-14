@@ -9,6 +9,8 @@ import Gig from "../models/Gig.model";
 import Review from "../models/Review.model";
 import BlogPost from "../models/BlogPost.model";
 import Dispute from "../models/Dispute.model";
+import Order from "../models/Order.model";
+
 dotenv.config();
 
 
@@ -30,6 +32,7 @@ async function seed() {
       Review.deleteMany({}),
       BlogPost.deleteMany({}),
       Dispute.deleteMany({}),
+      Order.deleteMany({}),
     ]);
     console.log("🗑️  Cleared existing data");
 
@@ -495,6 +498,46 @@ async function seed() {
       }
     ]);
     console.log(`✅ Created ${disputes.length} disputes (5 Open, 2 Resolved)`);
+
+    const today = new Date();
+    const nextWeek = new Date(today);
+    nextWeek.setDate(today.getDate() + 7);
+    const lastWeek = new Date(today);
+    lastWeek.setDate(today.getDate() - 7);
+
+    const orders = await Order.insertMany([
+      {
+        orderNumber: "ORD-982374A", // Matches the dispute we made earlier!
+        gig: gigs[3]._id,
+        client: client._id,
+        freelancer: freelancers[3]._id, // Jake
+        title: "AWS Cloud Architecture Migration",
+        amount: 399,
+        status: "in_dispute",
+        deadline: lastWeek,
+      },
+      {
+        orderNumber: "ORD-554411D", 
+        gig: gigs[0]._id,
+        client: client._id,
+        freelancer: freelancers[0]._id, // Sarah
+        title: "Full-Stack Next.js Dashboard",
+        amount: 799,
+        status: "in_progress",
+        deadline: nextWeek,
+      },
+      {
+        orderNumber: "ORD-112233G",
+        gig: gigs[1]._id,
+        client: client._id,
+        freelancer: freelancers[1]._id, // Marcus
+        title: "Mobile App UI Design (10 Screens)",
+        amount: 599,
+        status: "completed",
+        deadline: lastWeek,
+      }
+    ]);
+    console.log(`✅ Created ${orders.length} orders`);
 
     console.log("\n🎉 Seed complete! Your database is fully populated.");
     console.log("──────────────────────────────────────────");

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { sendSuccess } from "../utils/ApiResponse";
 import { userService } from "../services/user.service";
+import Order from "../models/Order.model";
 
 // GET /api/v1/users/profile
 export const getProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -32,4 +33,16 @@ export const changePassword = asyncHandler(async (req: Request, res: Response) =
 export const deactivateAccount = asyncHandler(async (req: Request, res: Response) => {
   await userService.deactivateAccount(req.user!.userId);
   sendSuccess(res, null, "Account deactivated");
+});
+
+export const getMyOrders = asyncHandler(async (req: Request, res: Response) => {
+  // Find orders where the user is EITHER the client OR the freelancer
+  const orders = await Order.find({
+    $or: [{ client: req.user!.userId }, { freelancer: req.user!.userId }]
+  })
+    .populate("client", "name avatar")
+    .populate("freelancer", "name avatar")
+    .sort({ createdAt: -1 });
+
+  sendSuccess(res, orders, "Orders fetched successfully");
 });
