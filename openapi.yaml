@@ -1,0 +1,980 @@
+openapi: 3.0.3
+info:
+  title: NexusAI Backend API
+  version: 1.0.0
+  description: |
+    OpenAPI skeleton generated from Express route definitions. Fill in schemas, examples, and security details as needed.
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+
+  schemas:
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        password:
+          type: string
+          example: StrongP4ssw0rd!
+      required: [name, email, password]
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        password:
+          type: string
+          example: StrongP4ssw0rd!
+      required: [email, password]
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 643a1f2b4c5d6e7f8a9b0c1d
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        role:
+          type: string
+          example: freelancer
+        avatar:
+          type: string
+          example: https://res.cloudinary.com/.../avatar.jpg
+        skills:
+          type: array
+          items:
+            type: string
+          example: ["javascript","nodejs"]
+        createdAt:
+          type: string
+          format: date-time
+
+    GigPackage:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        deliveryDays:
+          type: integer
+        revisions:
+          type: integer
+        features:
+          type: array
+          items:
+            type: string
+
+    Gig:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        freelancer:
+          $ref: '#/components/schemas/User'
+        images:
+          type: array
+          items:
+            type: string
+        startingPrice:
+          type: number
+        packages:
+          type: object
+          properties:
+            basic:
+              $ref: '#/components/schemas/GigPackage'
+            standard:
+              $ref: '#/components/schemas/GigPackage'
+            premium:
+              $ref: '#/components/schemas/GigPackage'
+        averageRating:
+          type: number
+          format: float
+        totalReviews:
+          type: integer
+        status:
+          type: string
+          example: active
+
+    Review:
+      type: object
+      properties:
+        _id:
+          type: string
+        gig:
+          $ref: '#/components/schemas/Gig'
+        reviewer:
+          $ref: '#/components/schemas/User'
+        rating:
+          type: integer
+          example: 5
+        title:
+          type: string
+        comment:
+          type: string
+        isVerifiedPurchase:
+          type: boolean
+
+    BlogPost:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        coverImage:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          example: published
+
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+        orderNumber:
+          type: string
+        gig:
+          $ref: '#/components/schemas/Gig'
+        client:
+          $ref: '#/components/schemas/User'
+        freelancer:
+          $ref: '#/components/schemas/User'
+        title:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          example: pending
+        deadline:
+          type: string
+          format: date-time
+
+    AIsession:
+      type: object
+      properties:
+        _id:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        model:
+          type: string
+        prompt:
+          type: string
+        response:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Resource not found"
+        errors:
+          type: array
+          items:
+            type: string
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and retrieve access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (clears cookies)
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logged out
+
+  /auth/refresh-token:
+    post:
+      tags: [Auth]
+      summary: Refresh access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refreshed
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /auth/google:
+    get:
+      tags: [Auth]
+      summary: Start Google OAuth flow
+      responses:
+        '302':
+          description: Redirect to Google
+
+  /auth/google/callback:
+    get:
+      tags: [Auth]
+      summary: Google OAuth callback
+      responses:
+        '302':
+          description: Redirect to client with token
+
+  /users/profile:
+    get:
+      tags: [Users]
+      summary: Get own profile
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: User profile
+    put:
+      tags: [Users]
+      summary: Update own profile
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Profile updated
+
+  /users/change-password:
+    post:
+      tags: [Users]
+      summary: Change password
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Password changed
+
+  /users/account:
+    delete:
+      tags: [Users]
+      summary: Deactivate account
+      security:
+        - cookieAuth: []
+      responses:
+        '204':
+          description: Account deactivated
+
+  /users/saved-gigs:
+    get:
+      tags: [Users]
+      summary: Get saved gigs
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of saved gigs
+
+  /users/saved-gigs/{gigId}:
+    post:
+      tags: [Users]
+      summary: Toggle saved gig
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: gigId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Toggled saved gig
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get public profile by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Public profile
+
+  /gigs:
+    get:
+      tags: [Gigs]
+      summary: List/search gigs
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of gigs
+    post:
+      tags: [Gigs]
+      summary: Create a gig (freelancer only)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Gig'
+      responses:
+        '201':
+          description: Gig created
+
+  /gigs/slug/{slug}:
+    get:
+      tags: [Gigs]
+      summary: Get gig by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gig
+
+  /gigs/{id}/related:
+    get:
+      tags: [Gigs]
+      summary: Get related gigs
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Related gigs
+
+  /gigs/{id}:
+    get:
+      tags: [Gigs]
+      summary: Get gig by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Gig
+    put:
+      tags: [Gigs]
+      summary: Update gig
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Gig'
+      responses:
+        '200':
+          description: Gig updated
+    delete:
+      tags: [Gigs]
+      summary: Delete gig
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+
+  /gigs/freelancer/my-gigs:
+    get:
+      tags: [Gigs]
+      summary: Get current freelancer's gigs
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of gigs
+
+  /talent:
+    get:
+      tags: [Talent]
+      summary: List talent (public)
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Talent list
+
+  /talent/{id}:
+    get:
+      tags: [Talent]
+      summary: Get freelancer profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Freelancer profile
+
+  /reviews/gig/{gigId}:
+    get:
+      tags: [Reviews]
+      summary: Get reviews for a gig
+      parameters:
+        - name: gigId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of reviews
+    post:
+      tags: [Reviews]
+      summary: Create review for a gig
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Review created
+
+  /reviews/{id}:
+    put:
+      tags: [Reviews]
+      summary: Update review
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Reviews]
+      summary: Delete review
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+    post:
+      summary: Mark review as helpful
+      tags: [Reviews]
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Marked helpful
+
+  /ai/pitch:
+    post:
+      tags: [AI]
+      summary: Build a pitch (AI)
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Generated pitch
+
+  /ai/analyze:
+    post:
+      tags: [AI]
+      summary: Analyze career (AI)
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Analysis
+
+  /ai/recommendations:
+    post:
+      tags: [AI]
+      summary: Get recommendations (AI)
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Recommendations
+
+  /ai/chat:
+    post:
+      tags: [AI]
+      summary: Chat with AI
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Chat response
+
+  /ai/conversations:
+    get:
+      tags: [AI]
+      summary: List conversations
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Conversations list
+
+  /ai/conversations/{id}:
+    get:
+      tags: [AI]
+      summary: Get conversation
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation
+    delete:
+      tags: [AI]
+      summary: Delete conversation
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+
+  /ai/usage:
+    get:
+      tags: [AI]
+      summary: Get AI usage stats
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Usage stats
+
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: Platform statistics
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Stats
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List users
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Users
+
+  /admin/users/{id}/toggle-status:
+    patch:
+      tags: [Admin]
+      summary: Toggle user active status
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Toggled
+
+  /admin/users/{id}/role:
+    patch:
+      tags: [Admin]
+      summary: Update user role
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Role updated
+
+  /admin/users/{id}:
+    delete:
+      tags: [Admin]
+      summary: Delete user
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+
+  /admin/gigs:
+    get:
+      tags: [Admin]
+      summary: Admin list gigs
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Gigs
+
+  /admin/gigs/{id}/status:
+    patch:
+      tags: [Admin]
+      summary: Update gig status
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Status updated
+
+  /admin/disputes:
+    get:
+      tags: [Admin]
+      summary: List disputes
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Disputes
+
+  /admin/disputes/{id}/resolve:
+    patch:
+      tags: [Admin]
+      summary: Resolve dispute
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resolved
+
+  /blog:
+    get:
+      tags: [Blog]
+      summary: List published posts
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Posts list
+    post:
+      tags: [Blog]
+      summary: Create post (admin)
+      security:
+        - cookieAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Post created
+
+  /blog/{slug}:
+    get:
+      tags: [Blog]
+      summary: Get published post by slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Post
+    put:
+      tags: [Blog]
+      summary: Update post (admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated
+    delete:
+      tags: [Blog]
+      summary: Delete post (admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
+
+  /orders:
+    get:
+      tags: [Orders]
+      summary: Get current user's orders
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Orders list
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Gigs
+  - name: Talent
+  - name: Reviews
+  - name: AI
+  - name: Admin
+  - name: Blog
+  - name: Orders
