@@ -1,8 +1,3 @@
-<!--
-  NexusAI - Backend
-  This README was generated automatically. Tweak sections to match your project's needs.
--->
-
 # NexusAI — Backend API
 
 ![Status: Active](https://img.shields.io/badge/status-active-brightgreen)
