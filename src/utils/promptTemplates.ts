@@ -86,20 +86,16 @@ Recent Platform Activity: ${input.recentActivity.join(", ")}
 
 Provide a JSON response with this exact shape:
 {
-  "gigCategories": [
-    { "category": "<string>", "reason": "<string>", "demandLevel": "high|medium|low", "avgRate": "<string>" }
-  ],
   "skillsToLearn": [
-    { "skill": "<string>", "reason": "<string>", "priority": "high|medium|low", "estimatedTime": "<string>" }
+    { "name": "<string>", "demand": "<string>", "variant": "default" }
   ],
-  "portfolioProjects": [
-    { "title": "<string>", "description": "<string>", "skillsUsed": ["<string>"] }
-  ],
-  "rateRecommendation": { "suggested": <number>, "reasoning": "<string>" }
+  "suggestedGigs": [
+    { "title": "<string>", "description": "<string>" }
+  ]
 }
 
-Provide exactly 4 gigCategories, 5 skillsToLearn, and 3 portfolioProjects.
-Respond with ONLY the JSON object, no markdown.
+The "variant" value must be one of "default", "secondary", "destructive", or "outline".
+Respond with ONLY JSON, no markdown.
 `.trim();
 
 export const chatSystemPrompt = (userContext: {

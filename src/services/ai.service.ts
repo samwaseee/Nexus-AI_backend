@@ -100,12 +100,24 @@ export const getRecommendations = async (
     const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
 
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !("skillsToLearn" in parsed) ||
+      !Array.isArray(parsed.skillsToLearn) ||
+      !("suggestedGigs" in parsed) ||
+      !Array.isArray(parsed.suggestedGigs)
+    ) {
+      throw ApiError.internal("AI returned incomplete recommendations. Please try again.");
+    }
+
     await saveSession(userId, "recommendations", prompt, text, Date.now() - start);
-    return parsed;
+    return parsed as Record<string, unknown>;
   } catch (err) {
     if (err instanceof SyntaxError) {
       throw ApiError.internal("AI returned malformed data. Please try again.");
     }
+    if (err instanceof ApiError) throw err;
     throw ApiError.internal("Recommendations failed. Please try again.");
   }
 };
